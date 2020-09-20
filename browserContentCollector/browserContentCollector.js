@@ -21,15 +21,17 @@ task = async urls => {
     )
 
     //TODO: make image screenshot configurable
-    const screenshots = Promise.all(
-        pages.map(async page => {
-            //TODO: refine image storage
-            const path = page.url().replace(/\.|\/|\:/g, '') + ".png"
-            console.log(path)
-            await page.screenshot({ path })
-        })
-    )
-    await screenshots
+    if(false){
+        const screenshots = Promise.all(
+            pages.map(async page => {
+                //TODO: refine image storage
+                const path = page.url().replace(/\.|\/|\:/g, '') + ".png"
+                console.log(path)
+                await page.screenshot({ path })
+            })
+        )
+        await screenshots
+    }
     await contents
     await browser.close()
 }

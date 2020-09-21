@@ -2,11 +2,17 @@
 
 BCC=browserContentCollector
 
-test_rss: sampleRSSFeeds.txt rssItemCollector.py
-	cat sampleRSSFeeds.txt | python3 rssItemCollector.py
+feed_db : sampleRSSItems
+	mongoimport --db rss --colleciton rss_item sampleRSSItems
 
-test_content: sampleURLs.txt $(BCC)/$(BCC).js
-	cat sampleURLs.txt | node $(BCC)/$(BCC).js
+sampleRSSItems:
+	mongoexport --db rss --collection rss_item --out sampleRSSItems
+
+test_rss: sampleRSSFeeds.txt rssItemCollector.py
+	python3 rssItemCollector.py < sampleRSSFeeds.txt
+
+test_content: sampleHash.txt $(BCC)/$(BCC).js
+	node $(BCC)/$(BCC).js < sampleHash.txt
 
 clean:
 	rm -rf *.png

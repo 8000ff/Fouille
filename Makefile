@@ -1,18 +1,22 @@
 #TODO: Create database connection or instanciation rule
 
-BCC=browserContentCollector
+RssIC=rssItemCollector.py
+BCC=browserContentCollector/browserContentCollector.js
 
-feed_db : sampleRSSItems
-	mongoimport --db rss --colleciton rss_item sampleRSSItems
+sampleRssItem:
+	mongoexport --db rss --collection rss_item --out sampleRssItem
 
-sampleRSSItems:
-	mongoexport --db rss --collection rss_item --out sampleRSSItems
+sampleHash: sampleRssItem
+	cat sampleRssItem | jq '.hash' | tr -d '"' > sampleHash
 
-test_rss: sampleRSSFeeds.txt rssItemCollector.py
-	python3 rssItemCollector.py < sampleRSSFeeds.txt
+sampleUrl: sampleRssItem
+	cat sampleRssItem | jq '.link' > sampleUrl
 
-test_content: sampleHash.txt $(BCC)/$(BCC).js
-	node $(BCC)/$(BCC).js < sampleHash.txt
+test_rss: feed $(RssIC)
+	python3 $(RssIC) < feed
+
+test_content: sampleHash $(BCC)
+	head sampleHash | node $(BCC)
 
 clean:
-	rm -rf *.png
+	rm -rf sampleRssItem sampleHash sampleUrl

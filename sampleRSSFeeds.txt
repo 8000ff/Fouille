@@ -1,2 +1,0 @@
-https://n-o-d-e.net/rss/rss.xml
-http://rss.cnn.com/rss/edition.rss

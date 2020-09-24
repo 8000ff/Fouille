@@ -6,7 +6,9 @@ const devices = puppeteer.devices;
 const { MongoClient,ObjectID } = require("mongodb");
 
 
+//const uri = "mongodb://176.166.49.201/rss";
 const uri = "mongodb://localhost/rss";
+
 const collectionName = "rss_item";
 
 //TODO: Make device emulation configurable :

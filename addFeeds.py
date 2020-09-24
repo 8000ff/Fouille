@@ -1,6 +1,11 @@
 import fileinput
 from pymongo import MongoClient
 
-collection = MongoClient('localhost', 27017).rss.rss_feed
-for feed in fileinput.input():
-    collection.update_one({"feed":feed}, {"$set": {'feed':feed}}, upsert=True)
+#config = { 'mongoUri' :'176.166.49.201'}
+config = { 'mongoUri' :'localhost'}
+
+
+collection = MongoClient(config['mongoUri'], 27017).rss.rss_feed
+links = [link.rstrip('\n') for link in fileinput.input()]
+for link in links:
+    collection.update_one({"link":link}, {"$set": {'link':link}}, upsert=True)

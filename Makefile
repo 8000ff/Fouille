@@ -33,4 +33,4 @@ test_content: sampleHash $(BCC)
 	head -n 1 sampleHash | node $(BCC)
 
 clean:
-	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId
+	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

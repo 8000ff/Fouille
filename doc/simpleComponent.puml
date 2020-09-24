@@ -30,7 +30,7 @@
 
     daemon ..> agents
 
-    euwi .left.> daemon
+    euwi .left.> mongo
 
     daemon --> config
     euwi --> query

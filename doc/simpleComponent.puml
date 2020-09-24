@@ -1,0 +1,59 @@
+@startuml
+    cloud "Internet" as internet
+    package Backend {
+        package "Agents" as agents {
+            component "Decorators" as decorator
+            component "Collectors" as collector
+            component "Exporter" as exporter
+        }
+        database "MongoDB" as mongo
+        component "Daemon" as daemon
+    }
+    package FrontEnd {
+        database "Elastic" as elastic
+        component "End User Web Interface" as euwi
+    }
+    
+    collector --> mongo
+    internet --> collector
+    
+    decorator --> mongo
+    decorator <.. mongo
+
+    daemon -up-> mongo
+
+    mongo --> exporter
+    exporter --> elastic
+
+    elastic -down-> euwi
+    euwi .up.> elastic
+
+    daemon ..> agents
+
+    euwi .left.> daemon
+
+    daemon --> config
+    euwi --> query
+
+    skinparam component{
+        backgroundColor White
+        borderColor Black
+    }
+    skinparam database{
+        backgroundColor White
+    }
+    skinparam cloud{ 
+        backgroundColor White
+    }
+    skinparam { 
+        backgroundColor White
+        borderColor Black
+        ArrowColor #000000
+    }
+
+    skinparam Interface{
+        backgroundColor White
+        borderColor Black
+    }
+
+@enduml

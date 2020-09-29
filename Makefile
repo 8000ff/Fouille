@@ -5,6 +5,8 @@ p=python3
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
 
+n=10
+
 sampleRssItem:
 	mongoexport --db rss --collection rss_item --out sampleRssItem
 
@@ -12,25 +14,25 @@ sampleRssFeed:
 	mongoexport --db rss --collection rss_feed --out sampleRssFeed
 
 sampleRssItemId: sampleRssItem
-	cat sampleRssItem | jq '._id' | jq '.[]' | tr -d '"' > sampleRssItemId
+	head -n $(n) sampleRssItem | jq '._id' | jq '.[]' | tr -d '"' > sampleRssItemId
 
 sampleRssFeedId: sampleRssFeed
-	cat sampleRssFeed | jq '._id' | jq '.[]' | tr -d '"' > sampleRssFeedId
+	head -n $(n) sampleRssFeed | jq '._id' | jq '.[]' | tr -d '"' > sampleRssFeedId
 
 
 sampleHash: sampleRssItem
-	cat sampleRssItem | jq '.hash' | tr -d '"' > sampleHash
+	head -n $(n) sampleRssItem | jq '.hash' | tr -d '"' > sampleHash
 
 sampleUrl: sampleRssItem
-	cat sampleRssItem | jq '.link' > sampleUrl
+	head -n $(n) sampleRssItem | jq '.link' > sampleUrl
 
 add_feed: feed addFeeds.py
-	$(p) addFeeds.py < feed
+	head -n $(n) feed | $(p) addFeeds.py
 
 test_rss: sampleRssFeedId $(RssIC)
-	$(p) $(RssIC) < sampleRssFeedId
-test_content: sampleHash $(BCC)
-	head -n 1 sampleHash | node $(BCC)
+	head -n $(n) sampleRssFeedId | $(p) $(RssIC) 
+test_content: sampleRssItemId $(BCC)
+	head -n $(n) sampleRssItemId | node $(BCC)
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

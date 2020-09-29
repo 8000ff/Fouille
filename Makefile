@@ -1,25 +1,38 @@
 #TODO: Create database connection or instanciation rule
 
+p=python3
+
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
+
+n=10
 
 sampleRssItem:
 	mongoexport --db rss --collection rss_item --out sampleRssItem
 
+sampleRssFeed:
+	mongoexport --db rss --collection rss_feed --out sampleRssFeed
+
 sampleRssItemId: sampleRssItem
-	cat sampleRssItem | jq '._id' | jq '.[]' | tr -d '"' > sampleRssItemId
+	head -n $(n) sampleRssItem | jq '._id' | jq '.[]' | tr -d '"' > sampleRssItemId
+
+sampleRssFeedId: sampleRssFeed
+	head -n $(n) sampleRssFeed | jq '._id' | jq '.[]' | tr -d '"' > sampleRssFeedId
+
 
 sampleHash: sampleRssItem
-	cat sampleRssItem | jq '.hash' | tr -d '"' > sampleHash
+	head -n $(n) sampleRssItem | jq '.hash' | tr -d '"' > sampleHash
 
 sampleUrl: sampleRssItem
-	cat sampleRssItem | jq '.link' > sampleUrl
+	head -n $(n) sampleRssItem | jq '.link' > sampleUrl
 
-test_rss: feed $(RssIC)
-	python3 $(RssIC) < feed
+add_feed: feed addFeeds.py
+	head -n $(n) feed | $(p) addFeeds.py
 
-test_content: sampleHash $(BCC)
-	head -n 1 sampleHash | node $(BCC)
+test_rss: sampleRssFeedId $(RssIC)
+	head -n $(n) sampleRssFeedId | $(p) $(RssIC) 
+test_content: sampleRssItemId $(BCC)
+	head -n $(n) sampleRssItemId | node $(BCC)
 
 clean:
-	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId
+	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

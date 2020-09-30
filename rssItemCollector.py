@@ -11,8 +11,7 @@ import asyncio
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
-#config = { 'mongoUri' :'176.166.49.201'}
-config = { 'mongoUri' :'localhost'}
+from os import environ 
 
 def make_hash(*values):
     # TODO: make "hash" algorithme configurable
@@ -36,9 +35,8 @@ async def attack(doc):
     url = doc['link']
     feed = feedparser.parse(url)
     rss_items = [make_item(url, post) for post in feed.entries]
-    # TODO: make db connection configurable
     # TODO: check that connection actually append
-    client = MongoClient(config['mongoUri'], 27017)
+    client = MongoClient(environ['MONGO_URI'], 27017)
     collection = client.rss.rss_item
     for item in rss_items:
         collection.update_one({'hash': item['hash']}, {
@@ -50,7 +48,7 @@ async def attack(doc):
 
 
 async def main():
-    client = MongoClient(config['mongoUri'], 27017)
+    client = MongoClient(environ['MONGO_URI'] , 27017)
     collection = client.rss.rss_feed
     ids = [ line.rstrip('\n') for line in fileinput.input() ]
     docs = list( collection.find({ "_id": { "$in" : [ObjectId(i) for i in ids]}}))

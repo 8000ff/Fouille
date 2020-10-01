@@ -1,11 +1,11 @@
 const puppeteer = require('puppeteer');
 const readline = require('readline');
 const { stdin, env } = require('process');
-const devices = puppeteer.devices;
 
 const { MongoClient, ObjectID } = require("mongodb");
 
-const uri = env.MONGO_URI + "/rss";
+const uri = env.MONGO_URI;
+const dbName = "rss"
 const collectionName = "rss_item";
 
 (async() => {
@@ -20,7 +20,7 @@ const collectionName = "rss_item";
         const browser = await puppeteer.launch({ headless: true })
         const getUrlsSession = await new MongoClient(uri, { useUnifiedTopology: true })
         await getUrlsSession.connect();
-        collection = await getUrlsSession.db().collection(collectionName)
+        collection = await getUrlsSession.db(dbName).collection(collectionName)
 
         docs = await collection
             .find({ '_id': { '$in': ids } })

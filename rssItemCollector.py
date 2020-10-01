@@ -36,25 +36,25 @@ async def attack(doc):
     feed = feedparser.parse(url)
     rss_items = [make_item(url, post) for post in feed.entries]
     # TODO: check that connection actually append
-    client = MongoClient(environ['MONGO_URI'], 27017)
-    collection = client.rss.rss_item
     for item in rss_items:
-        collection.update_one({'hash': item['hash']}, {
+        rss_item.update_one({'hash': item['hash']}, {
                               "$set": item}, upsert=True)
-    client.close()
 
 
 # As HTTP(s) can take time or even never respond, each input url has to treated asynchronously
 
 
 async def main():
-    client = MongoClient(environ['MONGO_URI'] , 27017)
-    collection = client.rss.rss_feed
     ids = [ line.rstrip('\n') for line in fileinput.input() ]
-    docs = list( collection.find({ "_id": { "$in" : [ObjectId(i) for i in ids]}}))
-    client.close()
+    docs = list( rss_feed.find({ "_id": { "$in" : [ObjectId(i) for i in ids]}}))
     await asyncio.gather(*[attack(doc) for doc in docs])
+
+client = MongoClient(environ['MONGO_URI'] , 27017)
+rss_feed = client.rss.rss_feed
+rss_item = client.rss.rss_item
+
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
 loop.close()
+client.close()

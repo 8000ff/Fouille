@@ -10,13 +10,13 @@ BCC=browserContentCollector/browserContentCollector.js
 n=10
 
 
-export MONGO_URI=mongodb://localhost:27017
+#export MONGO_URI=mongodb://localhost:27017
 
 sampleRssItem:
-	mongoexport --db rss --collection rss_item --out sampleRssItem
+	mongoexport $(MONGO_URI) --db rss --collection rss_item --out sampleRssItem
 
 sampleRssFeed:
-	mongoexport --db rss --collection rss_feed --out sampleRssFeed
+	mongoexport $(MONGO_URI) --db rss --collection rss_feed --out sampleRssFeed
 
 sampleRssItemId: sampleRssItem
 	head -n $(n) sampleRssItem | jq '._id' | jq '.[]' | tr -d '"' > sampleRssItemId

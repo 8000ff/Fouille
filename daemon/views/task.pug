@@ -1,0 +1,27 @@
+div#container
+    form(action="update_task", method="post")
+        ul#flex-outer
+            li taskname
+                input(type="hidden", name="taskname",value="test")
+            li
+                label(for="require") require
+                textarea(name="require", cols="30", rows="5")
+            li
+                label(for="produce") produce
+                textarea(name="produce", cols="30", rows="5")
+            li
+                label(for="periodic") periodic
+                input(type="checkbox", name="periodic")
+            li
+                label(for="period") period
+                input(type="number", name="period")
+            li
+                label(for="attack") attack
+                input(type="checkbox", name="attack")
+            li
+                label(for="command") command
+                input(type="text", name="command")
+            li
+                label(for="batch") Batch size (0 = infinite, not recommended)
+                input(type="number", name="batch")
+        

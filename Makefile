@@ -1,14 +1,12 @@
 #TODO: Create database connection or instanciation rule
 
-
 p=python3
-
 
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
+CC=contentCleaner/contentCleaner.py
 
 n=10
-
 
 #export MONGO_URI=mongodb://localhost:27017
 
@@ -24,7 +22,6 @@ sampleRssItemId: sampleRssItem
 sampleRssFeedId: sampleRssFeed
 	head -n $(n) sampleRssFeed | jq '._id' | jq '.[]' | tr -d '"' > sampleRssFeedId
 
-
 sampleHash: sampleRssItem
 	head -n $(n) sampleRssItem | jq '.hash' | tr -d '"' > sampleHash
 
@@ -36,8 +33,12 @@ add_feed: feed addFeeds.py
 
 test_rss: sampleRssFeedId $(RssIC)
 	head -n $(n) sampleRssFeedId | $(p) $(RssIC) 
+
 test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
+
+test_content_cleaner: sampleRssItemId $(CC)
+	head -n $(n) sampleRssItemId | node $(CC)
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

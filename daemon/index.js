@@ -1,19 +1,17 @@
-const pug = require('pug');
-const express = require('express');
-const app = express();
+const { env } = require('process')
 
-const readline = require('readline');
-const { stdin, env } = require('process');
+const { MongoClient, ObjectID } = require("mongodb")
 
-const { MongoClient, ObjectID } = require("mongodb");
+const uri = env.MONGO_URI
+const dbName = "rss"
+const collectionName = "rss_task"
 
-const uri = env.MONGO_URI + "/rss";
+(async() => {
+    const client = await new MongoClient(uri, { useUnifiedTopology: true })
+    await client.connect()
 
-app.set('view engine', 'pug')
-app.use(express.static(__dirname + "/public"));
+    tasks = await client.db(dbName).collection(collectionName)
 
-app.get('/', (req, res) => {
-    res.render('base')
+
+
 })
-
-app.listen(3000, () => console.log('listening on 3000'))

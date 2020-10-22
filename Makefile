@@ -6,7 +6,7 @@ p=python3
 
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
-
+daemon=daemon/index.js
 n=10
 
 
@@ -38,6 +38,19 @@ test_rss: sampleRssFeedId $(RssIC)
 	head -n $(n) sampleRssFeedId | $(p) $(RssIC) 
 test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
+
+.FORCE:
+
+test_daemon: .FORCE
+	node $(daemon)
+
+save:
+	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
+	mongoexport $(MONGO_URI) --db rss --collection config --out config
+
+load:
+	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
+	mongoimport $(MONGO_URI) --db rss --collection config --file config
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

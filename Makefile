@@ -6,6 +6,7 @@ p=python3
 
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
+E=exporter/exporter.py
 
 n=10
 
@@ -36,8 +37,12 @@ add_feed: feed addFeeds.py
 
 test_rss: sampleRssFeedId $(RssIC)
 	head -n $(n) sampleRssFeedId | $(p) $(RssIC) 
+
 test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
+
+test_exporter: sampleRssItemId $(E)
+	head -n $(n) sampleRssItemId | $(p) $(E)
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

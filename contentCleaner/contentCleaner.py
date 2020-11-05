@@ -27,6 +27,6 @@ client = MongoClient('mongodb://rss_user:rssproject1@51.83.70.93:27017/?authSour
 rss_item = client.rss.rss_item
 
 ids = filter(lambda id: hasHtml(id), [line.rstrip('\n') for line in fileinput.input()]) 
+
 for id in ids:
-    print(id)
     clean(id)

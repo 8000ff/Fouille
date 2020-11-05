@@ -8,7 +8,7 @@ CC=contentCleaner/contentCleaner.py
 
 n=10
 
-#export MONGO_URI=mongodb://localhost:27017
+export MONGO_URI=mongodb://rss_user:rssproject1@51.83.70.93:27017/?authSource=rss
 
 sampleRssItem:
 	mongoexport $(MONGO_URI) --db rss --collection rss_item --out sampleRssItem
@@ -38,7 +38,7 @@ test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
 
 test_content_cleaner: sampleRssItemId $(CC)
-	head -n $(n) sampleRssItemId | node $(CC)
+	head -n $(n) sampleRssItemId | $(p) $(CC)
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

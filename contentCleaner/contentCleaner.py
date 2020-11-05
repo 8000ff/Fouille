@@ -21,11 +21,12 @@ def htmlToTxt(html):
 def clean(id):
     html = getHtml(id)
     cleanContent = htmlToTxt(html)
-    rss_item.update_one({"_id": ObjectId(id)}, {"$set": {"cleanContent": cleanContent}})
+    rss_item.update_one({"_id": ObjectId(id)}, {"$set": { "contentCleaner": { "cleanContent": cleanContent}}})
 
 client = MongoClient('mongodb://rss_user:rssproject1@51.83.70.93:27017/?authSource=rss')
 rss_item = client.rss.rss_item
 
 ids = filter(lambda id: hasHtml(id), [line.rstrip('\n') for line in fileinput.input()]) 
 for id in ids:
+    print(id)
     clean(id)

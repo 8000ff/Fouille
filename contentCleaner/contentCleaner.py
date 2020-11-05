@@ -9,25 +9,23 @@ import asyncio
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
+def hasHtml(id):
+    return rss_item.count_documents({"_id": ObjectId(id), "browserContentCollector.htmlContent": {"$exists": "true"}}) == 1
+
 def getHtml(id):
-	return rss_item.find_one({"_id": ObjectId(id)}).html
+    return rss_item.find_one({"_id": ObjectId(id)})["browserContentCollector"]["htmlContent"]
 
 def htmlToTxt(html):
-	return BeautifulSoup(html, 'html.parser')
+	return " ".join(BeautifulSoup(html, 'html.parser').get_text().split())
 
-async def clean(id):
+def clean(id):
     html = getHtml(id)
     cleanContent = htmlToTxt(html)
-    rss_item.update_one({"_id": ObjectId(id)}, { "$set": { "cleanContent": cleanContent } } )
+    rss_item.update_one({"_id": ObjectId(id)}, {"$set": {"cleanContent": cleanContent}})
 
-async def main():
-    ids = [line.rstrip('\n') for line in fileinput.input()]
-    await asyncio.gather(*[clean(id) for id in ids])
-
-client = MongoClient("176.166.49.201", 27017)
+client = MongoClient('mongodb://rss_user:rssproject1@51.83.70.93:27017/?authSource=rss')
 rss_item = client.rss.rss_item
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
-loop.close()
-client.close()
+ids = filter(lambda id: hasHtml(id), [line.rstrip('\n') for line in fileinput.input()]) 
+for id in ids:
+    clean(id)

@@ -5,10 +5,12 @@ p=python3
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
 CC=contentCleaner/contentCleaner.py
+E=exporter/exporter.py
+daemon=daemon/index.js
 
 n=10
 
-export MONGO_URI=mongodb://rss_user:rssproject1@51.83.70.93:27017/?authSource=rss
+#export MONGO_URI=mongodb://localhost:27017
 
 sampleRssItem:
 	mongoexport $(MONGO_URI) --db rss --collection rss_item --out sampleRssItem
@@ -39,6 +41,20 @@ test_content: sampleRssItemId $(BCC)
 
 test_content_cleaner: sampleRssItemId $(CC)
 	head -n $(n) sampleRssItemId | $(p) $(CC)
+test_exporter: sampleRssItemId $(E)
+	head -n $(n) sampleRssItemId | $(p) $(E)
+
+.FORCE:
+test_daemon: .FORCE
+	node $(daemon)
+
+save:
+	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
+	mongoexport $(MONGO_URI) --db rss --collection config --out config
+
+load:
+	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
+	mongoimport $(MONGO_URI) --db rss --collection config --file config
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

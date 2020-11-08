@@ -10,6 +10,9 @@ import json
 
 from functools import reduce
 
+from os import environ 
+
+
 def deepGet(dic, keys, default = None):
     return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."), dic)
 
@@ -35,7 +38,7 @@ def isAlreadyExported(id):
             }
         }
     }
-    res = requests.get("http://51.83.70.93:9200/rss/rss_item/_search/", data=json.dumps(query)).json()
+    res = requests.get(environ['ELASTIC_URI']+"/rss/rss_item/_search/", data=json.dumps(query)).json()
     if res["hits"]["total"] == 1:
         return res["hits"]["hits"][0]["_id"]
     else:
@@ -49,12 +52,11 @@ def export(id, fields):
     elastic_id = isAlreadyExported(id)
     if(elastic_id):
         data = { "doc": data }
-        requests.post(url = "http://51.83.70.93:9200/rss/rss_item/" + str(elastic_id) + "/_update/", data = json.dumps(data))
+        requests.post(url = environ['ELASTIC_URI']+"/rss/rss_item/" + str(elastic_id) + "/_update/", data = json.dumps(data))
     else:
-        requests.post(url = "http://51.83.70.93:9200/rss/rss_item/", data = json.dumps(data))
+        requests.post(url = environ['ELASTIC_URI']+"/rss/rss_item/", data = json.dumps(data))
     
-
-client = MongoClient('mongodb://rss_user:rssproject1@51.83.70.93:27017/?authSource=rss')
+client = MongoClient(environ['MONGO_URI'] , 27017)
 rss_item = client.rss.rss_item
 
 ids = [line.rstrip('\n') for line in fileinput.input()]

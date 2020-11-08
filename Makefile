@@ -11,6 +11,7 @@ daemon=daemon/index.js
 n=10
 
 #export MONGO_URI=mongodb://localhost:27017
+#export ELASTIC_URI=http://localhost:9200/
 
 sampleRssItem:
 	mongoexport $(MONGO_URI) --db rss --collection rss_item --out sampleRssItem

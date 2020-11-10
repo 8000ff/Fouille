@@ -1,5 +1,3 @@
-# Rendu sp1
-
 Projet commun :
  - Clément Malléjac
  - Thomas Brochot

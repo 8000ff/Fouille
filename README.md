@@ -1,7 +1,3 @@
----
-geometry: margin=1.5cm
----
-
 # Rendu sp1
 
 Projet commun :
@@ -14,7 +10,7 @@ Projet commun :
 
 Un diagramme de composant fut nécessaire afin de modéliser l'architecture hétérogène de ce projet.
 
-![diagramme de composant](SP1/doc/diag_comp.png)
+![diagramme de composant](doc/diag_comp.png)
 
 Deux parties se distinguent dans cette architecture.
 

@@ -11,7 +11,9 @@ import asyncio
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
-from os import environ 
+from datetime import datetime
+
+from os import environ
 
 def make_hash(*values):
     # TODO: make "hash" algorithme configurable
@@ -33,6 +35,7 @@ def make_item(source, post):
 
 async def attack(doc):
     url = doc['link']
+    rss_feed.update_one({'_id':doc['_id']},{'$set':{'lastCheck':datetime.utcnow()}})
     feed = feedparser.parse(url)
     rss_items = [make_item(url, post) for post in feed.entries]
     # TODO: check that connection actually append

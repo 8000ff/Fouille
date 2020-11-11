@@ -44,10 +44,6 @@ test_content_cleaner: sampleRssItemId $(CC)
 test_exporter: sampleRssItemId $(E)
 	head -n $(n) sampleRssItemId | $(p) $(E)
 
-.FORCE:
-test_daemon: .FORCE
-	node $(daemon)
-
 save:
 	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
 	mongoexport $(MONGO_URI) --db rss --collection config --out config

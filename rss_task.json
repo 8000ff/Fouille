@@ -22,7 +22,8 @@
     "command": [
         "node",
         "browserContentCollector/browserContentCollector.js"
-    ]
+    ],
+    "batchsize": 15
 }
 
 {

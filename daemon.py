@@ -7,8 +7,9 @@ from os import environ
 from subprocess import run, PIPE
 from collections import defaultdict
 from operator import itemgetter as get
-from more_itertools import map_reduce
+from more_itertools import map_reduce,chunked,flatten
 from itertools import groupby
+from functools import reduce
 
 from time import sleep
 from datetime import datetime,timedelta
@@ -19,42 +20,56 @@ db = client.rss
 
 def planJobs():
     for task in db.rss_task.find({'enable':True}):
-        p = {**task['query']['filter']}
+        p = task['query']['filter']
         if interval := task.get('interval'):
             p['$or'] = [
                     {'lastCheck':None},
                     {'lastCheck':{'$lt': datetime.utcnow() - timedelta(**interval)}}
             ]
-
         docs = db[task['query']['collection']].find(p,{'_id':1})
         ids = list(map(get('_id'),docs))
         if len(ids) > 0:
             yield defaultdict(None,{**task, 'ids': ids})
+    
 
 def executeJob(job):
-    print('working', job['description'])
     return run(job['command'], stdout=PIPE,input='\n'.join(map(str,job['ids'])), encoding='ascii')
 
+def optimizeBatches(jobs):
+    pred = lambda job : job.get('batchsize') and job['batchsize'] < len(job['ids'])
+    merge = lambda i,j : {**i, 'ids': list( set(i['ids']) | set(j['ids']) ) }
+    balance = lambda merged : [{**merged,'ids':xs} for xs in chunked(merged['ids'],merged['batchsize'])]
+
+    optimised,optimiseable = list(filter(lambda x : not pred(x),jobs)),list(filter(pred,jobs))
+    
+    grouped = [ list(v) for k,v in groupby( optimiseable , get('_id') )]
+    merged = [ reduce(merge,job) for job in grouped ]
+    balanced = map(balance,merged)
+
+    return [*optimised,*flatten(balanced)]
+
 # plan a lot
+print('planning initial jobs')
 jobs = list(planJobs())
 while True:
     # do a little
     try:
         job = jobs.pop()
+        print('working', job['description'],len(job['ids']))
         executeJob(job)
-#        print('job done')
     except IndexError:
-        print('no more jobs')
+        print('no more jobs in queue')
         pass
 
     # check what's new
+    print('planning jobs',end=' ')
     jobs.extend(planJobs())
-    
+
+    print(len(jobs),end=' -> ')
+    jobs = optimizeBatches(jobs)
+    print(len(jobs))
     if len(jobs) == 0 :
         print('nothing to do')
         sleep(10)
-
-    print('')
-    sleep(1)
-
+    
 client.close()

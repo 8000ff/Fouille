@@ -6,7 +6,6 @@ RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
 CC=contentCleaner/contentCleaner.py
 E=exporter/exporter.py
-daemon=daemon/index.js
 
 n=10
 
@@ -45,13 +44,16 @@ test_content_cleaner: sampleRssItemId $(CC)
 test_exporter: sampleRssItemId $(E)
 	head -n $(n) sampleRssItemId | $(p) $(E)
 
-save:
-	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
-	mongoexport $(MONGO_URI) --db rss --collection config --out config
+daemon:
+	python3 daemon.py
+
+# save:
+# 	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
+# 	mongoexport $(MONGO_URI) --db rss --collection config --out config
 
 load:
-	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
-	mongoimport $(MONGO_URI) --db rss --collection config --file config
+	# mongoimport $(MONGO_URI) --db rss --collection config --file config.json
+	mongoimport $(MONGO_URI) --db rss --collection rss_task --file rss_task.json
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

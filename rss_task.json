@@ -1,0 +1,65 @@
+{
+    "description": "Retrieve rss items from feeds",
+    "enable": true,
+    "query": {
+        "collection": "rss_feed",
+        "filter": {}
+    },
+    "interval": { "seconds": 60 },
+    "command": [
+        "python3",
+        "rssItemCollector.py"
+    ]
+}
+
+{
+    "description": "Retrieve html content from rss item links",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "link": { "$exists": true }, "browserContentCollector": { "$exists": false } }
+    },
+    "command": [
+        "node",
+        "browserContentCollector/browserContentCollector.js"
+    ]
+}
+
+{
+    "description": "Get clean text",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "browserContentCollector": { "$exists": true }, "contentCleaner": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "contentCleaner.py"
+    ]
+}
+
+{
+    "description": "Word count",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "contentCleaner": { "$exists": true }, "wordcount": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "wordCount.py"
+    ]
+}
+
+{
+    "description": "Predict language",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "wordcount": { "$exists": true }, "detectLanguage": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "detectLanguage.py"
+    ]
+}

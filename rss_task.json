@@ -43,7 +43,7 @@
     "enable": true,
     "query": {
         "collection": "rss_item",
-        "filter": { "contentCleaner": { "$exists": true }, "wordcount": { "$exists": false } }
+        "filter": { "contentCleaner": { "$exists": true }, "wordCount": { "$exists": false } }
     },
     "command": [
         "python3",

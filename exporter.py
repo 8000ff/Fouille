@@ -10,7 +10,7 @@ import json
 
 from functools import reduce
 
-from os import environ 
+from os import environ
 
 
 def deepGet(dic, keys, default = None):

@@ -46,7 +46,7 @@ const collectionName = "rss_item";
 
                 await collection.updateOne(filter, addendum)
                 console.log(`${opts.n} ${doc.link} hit`)
-                page.close()
+                await page.close()
 
             } catch (e) {
                 console.log(`${opts.n} ${doc.link} missed because ${e}`)

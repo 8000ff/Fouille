@@ -1,0 +1,40 @@
+html
+
+    head
+
+        meta(content-type="text/html", charset="utf-8")
+        title="Fiak News"
+
+        script(src="http://code.jquery.com/jquery-3.5.1.min.js")
+
+        script(src="/script/script.js")
+
+        link(rel="stylesheet" href="/style/style.css")
+
+body
+
+    section#result
+
+        div.topSearchCard
+
+            img.searchCardTitle(src="../images/title.svg")
+
+            div.searchCardInput
+
+                input(value=query)
+
+                img(src="../images/magnifying_glass.svg")
+
+        div.results
+
+            p #{results.length} resultat(s)
+
+            each result in results
+
+                div.result
+                        
+                    h1.title
+
+                        a(href=`${result.link}`) #{result.title}
+
+                    p.description #{result.description}

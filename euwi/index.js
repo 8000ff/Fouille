@@ -1,54 +1,84 @@
-const pug = require('pug');
-const express = require('express');
-const app = express()
+const express = require("express");
+const app = express();
 
-const elstic_uri = 'http://localhost:9200'
-const { Client } = require('@elastic/elasticsearch')
-const elastic = new Client({ node: elstic_uri })
+const pug = require("pug");
 
+function searchNews(query) {
 
-const { MongoClient } = require("mongodb");
+    let ret = [
+        {
 
-const mongo_uri = "mongodb://localhost/rss"
-const collectionName = "elastic_client";
+            title: "test1",
+            description: "test1test1test1test1test1",
+            link: "/test1"
 
-async function register() {
-    const mongo = new MongoClient(mongo_uri)
-    try {
-        await mongo.connect()
-        collection = await mongo.db().collection(collectionName)
-        registered = await collection.find({ elstic_uri }).count() > 0
-        if (!registered) {
-            await collection.insertOne({ elstic_uri })
+        },
+        {
+
+            title: "test2",
+            description: "test2test2test2test2test2",
+            link: "/test2"
+
+        },
+        {
+
+            title: "test3",
+            description: "test3test3test3test3test3",
+            link: "/test3"
+
+        },
+        {
+
+            title: "test4",
+            description: "test4test4test4test4test4",
+            link: "/test4"
+
         }
-        mongo.close();
-    } catch (e) {
-        console.warn('Elastic instance did not manage to contact backend, backend is probably offline')
-    }
+
+    ];
+
+    return ret;
+
 }
-register()
 
-app.set('view engine', 'pug')
+app
+    .set("views", "./views")
 
-app.get('/', function(req, res) {
-    console.log('req')
-    const params = Object.keys(req.query)
-    if (params.length == 0) {
-        res.render('search')
-    } else {
-        elastic.search({
-            index: 'my-index',
-            body: {
-                query: {
-                    match: { hello: 'world' }
-                }
-            }
-        }, (err, result) => {
-            if (err) console.log(err)
-            else res.render('result', result)
-        })
-    }
-})
+    .set("view engine", "pug")
 
-app.use(express.static(__dirname + "/public"));
-app.listen(3000, (x) => console.log('listening', x))
+    .use(express.static("public"))
+
+    .get("/", (_, res) => {
+
+        res.status(200);
+        res.render("index");
+        res.end();
+
+    })
+
+    .get("/search/:query", (req, res) => {
+
+        let query = req.params.query;
+
+        let results = searchNews(query);
+
+        res.status(200);
+        res.render("result", { query: query, results: results });
+        res.end();
+
+    })
+
+    .use(function(_, res){
+
+        res.setHeader("Content-Type", "text/plain");
+        res.status(404);
+        res.send("Page introuvable");
+        res.end();
+
+    })
+
+    .listen(8080, () => {
+
+        console.log(`Server started at port 8080`);
+
+    });

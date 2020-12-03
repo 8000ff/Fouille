@@ -1,5 +1,5 @@
 {
-    "description": "Retrieve rss items from feeds",
+    "description": "Periodically retrieves rss items from feeds",
     "enable": true,
     "query": {
         "collection": "rss_feed",
@@ -23,7 +23,7 @@
         "node",
         "browserContentCollector/browserContentCollector.js"
     ],
-    "batchsize": 15
+    "batchsize": 50
 }
 
 {
@@ -62,5 +62,32 @@
     "command": [
         "python3",
         "detectLanguage.py"
+    ]
+}
+
+{
+    "description": "Stemmer",
+    "enable": false,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "detectLanguage": { "$exists": true }, "contentCleaner": { "$exists": true }, "stemmer": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "stemmer.py"
+    ]
+}
+
+{
+    "description": "Convert the stemmed NL content of documents to a matrix of token counts",
+    "enable": false,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "contentCleaner": { "$exists": true } }
+    },
+    "interval": { "seconds": 60 },
+    "command": [
+        "python3",
+        "countVectorizer.py"
     ]
 }

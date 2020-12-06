@@ -5,7 +5,7 @@
         "collection": "rss_feed",
         "filter": {}
     },
-    "interval": { "seconds": 60 },
+    "interval": { "seconds": 3600 },
     "command": [
         "python3",
         "rssItemCollector.py"
@@ -23,7 +23,7 @@
         "node",
         "browserContentCollector/browserContentCollector.js"
     ],
-    "batchsize": 50
+    "batchsize": 100
 }
 
 {
@@ -57,7 +57,7 @@
     "enable": true,
     "query": {
         "collection": "rss_item",
-        "filter": { "wordcount": { "$exists": true }, "detectLanguage": { "$exists": false } }
+        "filter": { "wordCount": { "$exists": true }, "detectLanguage": { "$exists": false } }
     },
     "command": [
         "python3",
@@ -67,7 +67,7 @@
 
 {
     "description": "Stemmer",
-    "enable": false,
+    "enable": true,
     "query": {
         "collection": "rss_item",
         "filter": { "detectLanguage": { "$exists": true }, "contentCleaner": { "$exists": true }, "stemmer": { "$exists": false } }
@@ -75,7 +75,8 @@
     "command": [
         "python3",
         "stemmer.py"
-    ]
+    ],
+    "batchsize": 15
 }
 
 {
@@ -83,7 +84,7 @@
     "enable": false,
     "query": {
         "collection": "rss_item",
-        "filter": { "contentCleaner": { "$exists": true } }
+        "filter": { "contentCleaner": { "$exists": true }, "wordCount": { "$exists": true } }
     },
     "interval": { "seconds": 60 },
     "command": [

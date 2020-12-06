@@ -14,6 +14,7 @@ from functools import reduce
 from time import sleep
 from datetime import datetime,timedelta
 
+from random import shuffle
 
 client = MongoClient(environ['MONGO_URI'])
 db = client.rss
@@ -28,8 +29,9 @@ def planJobs():
             ]
         docs = db[task['query']['collection']].find(p,{'_id':1})
         ids = list(map(get('_id'),docs))
+        shuffle(ids)
         if len(ids) > 0:
-            yield defaultdict(None,{**task, 'ids': ids})
+            yield defaultdict(None,{**task, 'ids': ids[:task.get('batchsize')]})
     
 
 def executeJob(job):
@@ -50,7 +52,7 @@ def optimizeBatches(jobs):
 
 # plan a lot
 print('planning initial jobs')
-jobs = list(planJobs())
+jobs = [next(planJobs())]
 while True:
     # do a little
     try:
@@ -63,11 +65,11 @@ while True:
 
     # check what's new
     print('planning jobs',end=' ')
-    jobs.extend(planJobs())
+    jobs = [next(planJobs())]
 
-    print(len(jobs),end=' -> ')
-    jobs = optimizeBatches(jobs)
-    print(len(jobs))
+    # print(len(jobs),end=' -> ')
+    # jobs = optimizeBatches(jobs)
+    # print(len(jobs))
     if len(jobs) == 0 :
         print('nothing to do')
         sleep(10)

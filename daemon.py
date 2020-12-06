@@ -15,7 +15,7 @@ from time import sleep
 from datetime import datetime,timedelta
 
 
-client = MongoClient(environ['MONGO_URI'] , 27017)
+client = MongoClient(environ['MONGO_URI'])
 db = client.rss
 
 def planJobs():
@@ -33,7 +33,7 @@ def planJobs():
     
 
 def executeJob(job):
-    return run(job['command'], stdout=PIPE,input='\n'.join(map(str,job['ids'])), encoding='ascii')
+    return run(job['command'], stdout=PIPE,input='\n'.join(map(str,job['ids'])), encoding='utf8')
 
 def optimizeBatches(jobs):
     pred = lambda job : job.get('batchsize') and job['batchsize'] < len(job['ids'])

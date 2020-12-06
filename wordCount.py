@@ -5,7 +5,7 @@ import fileinput
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
-from os import environ 
+from os import environ
 
 from itertools import *
 from more_itertools import *
@@ -20,11 +20,15 @@ from toolz import pipe,compose,identity,flip
 
 from unidecode import unidecode
 
+stopsize = 25
+
+from collections import Counter
+
 wordcount = lambda words : map_reduce(words,lambda x:x ,lambda x : 1,sum)
 
 def attack(doc):
     # TODO: this field could be configurable
-    wc = wordcount(pipe(
+    wc = Counter(pipe(
         doc['contentCleaner']['cleanContent'],
         str.lower,
         unidecode,

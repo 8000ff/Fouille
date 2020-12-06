@@ -19,8 +19,12 @@ from random import shuffle
 client = MongoClient(environ['MONGO_URI'])
 db = client.rss
 
+
+
 def planJobs():
-    for task in db.rss_task.find({'enable':True}):
+    tasks = list(db.rss_task.find({'enable':True}))
+    shuffle(tasks)
+    for task in tasks:
         p = task['query']['filter']
         if interval := task.get('interval'):
             p['$or'] = [

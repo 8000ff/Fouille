@@ -9,7 +9,8 @@
     "command": [
         "python3",
         "rssItemCollector.py"
-    ]
+    ],
+    "batchsize": 1
 }
 
 {
@@ -36,7 +37,8 @@
     "command": [
         "python3",
         "contentCleaner.py"
-    ]
+    ],
+    "batchsize": 100
 }
 
 {
@@ -49,7 +51,8 @@
     "command": [
         "python3",
         "wordCount.py"
-    ]
+    ],
+    "batchsize": 100
 }
 
 {
@@ -62,7 +65,8 @@
     "command": [
         "python3",
         "detectLanguage.py"
-    ]
+    ],
+    "batchsize": 100
 }
 
 {

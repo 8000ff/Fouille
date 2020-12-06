@@ -6,11 +6,12 @@ p=python3
 
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
+svm=svmClassifier.py
 
 n=10
 
 
-#export MONGO_URI=mongodb://localhost:27017
+export MONGO_URI=mongodb://rss_user:rssproject1@51.83.70.93:27017/?authSource=rss
 
 sampleRssItem:
 	mongoexport $(MONGO_URI) --db rss --collection rss_item --out sampleRssItem
@@ -36,8 +37,12 @@ add_feed: feed addFeeds.py
 
 test_rss: sampleRssFeedId $(RssIC)
 	head -n $(n) sampleRssFeedId | $(p) $(RssIC) 
+
 test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
+
+test_svm:
+	$(p) $(svm)
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

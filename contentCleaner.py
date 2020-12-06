@@ -17,8 +17,11 @@ h2t.ignore_images = True
 h2t.ignore_emphasis = True
 
 def clean(id):
-    html = rss_item.find_one({"_id": ObjectId(id)})["browserContentCollector"]["htmlContent"]
-    cleanContent = h2t.handle(html).replace('*','').replace('\n',' ')
+    doc = rss_item.find_one({"_id": ObjectId(id)})
+    html = doc["browserContentCollector"]["htmlContent"]
+    cleanContent = h2t.handle(html)
+    cleanContent += " "+doc['description'] +" "+doc['title'] 
+    cleanContent.replace('*','').replace('\n',' ')
     cleanContent = re.sub(r"\W",' ',cleanContent)
     cleanContent = re.sub(r"\s+",' ',cleanContent)
     rss_item.update_one({"_id": ObjectId(id)}, {"$set": { "contentCleaner": { "cleanContent": cleanContent}}})

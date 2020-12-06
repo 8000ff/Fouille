@@ -42,13 +42,14 @@ def executeJob(job):
     return run(job['command'], stdout=PIPE,input='\n'.join(map(str,job['ids'])), encoding='utf8')
 
 # plan a lot
-print('planning initial jobs')
 while True:
+    print('planning')
     job = planJobs()
     # do a little
     if job:
         print('working', job['description'],len(job['ids']))
         executeJob(job)
+        print('done')        
     else:
         print('nothing to do')
         sleep(5)

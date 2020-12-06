@@ -4,10 +4,10 @@ from pymongo import MongoClient
 
 from os import environ 
 
-def getDataFromDB(corpusSize):
+def getDataFromDB():
     client = MongoClient(environ['MONGO_URI'])
     rss_item = client.rss.rss_item
-    items = rss_item.find({ "stemmer": { "$exists": "true" }, "label": { "$exists": "true" }}, { "stemmer": 1, "label": 1, "_id": 0}).limit(corpusSize)
+    items = rss_item.find({ "stemmer": { "$exists": "true" }, "label": { "$exists": "true" }}, { "stemmer": 1, "label": 1, "_id": 0})
     data = []
     for item in items:
         data.append([item["stemmer"]["stemmed"], item["label"]])
@@ -56,9 +56,9 @@ from os import path
 
 import pandas as pd 
 
-def getOrCreateCorpus(corpusSize):
+def getOrCreateCorpus():
     if not path.exists("preProcessingData.csv"):
-        all_data = getDataFromDB(corpusSize)
+        all_data = getDataFromDB()
         for data in all_data:
             data[0] = dataPreProcessing(data[0])
         data_frame = pd.DataFrame(all_data, columns = ["text", "label"]) 
@@ -77,9 +77,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
 
-corpus = getOrCreateCorpus(10000)
+corpus = getOrCreateCorpus()
 
-Train_X, Test_X, Train_Y, Test_Y = model_selection.train_test_split(corpus['text'], corpus['label'], test_size=0.3)
+Train_X, Test_X, Train_Y, Test_Y = model_selection.train_test_split(corpus['text'], corpus['label'], test_size = 0.3)
 
 Encoder = LabelEncoder()
 Train_Y = Encoder.fit_transform(Train_Y)

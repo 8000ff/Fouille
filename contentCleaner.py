@@ -1,26 +1,22 @@
 #!/usr/bin/python3
 
-from bs4 import BeautifulSoup
-
+from html2text import HTML2Text 
 import fileinput
-
-import asyncio
 
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 from os import environ 
 
-
-def getHtml(id):
-    return rss_item.find_one({"_id": ObjectId(id)})["browserContentCollector"]["htmlContent"]
-
-def htmlToTxt(html):
-	return " ".join(BeautifulSoup(html, 'html.parser').get_text().split())
+h2t = HTML2Text()
+h2t.ignore_links = True
+h2t.ignore_tables = True
+h2t.ignore_images = True
+h2t.ignore_emphasis = True
 
 def clean(id):
-    html = getHtml(id)
-    cleanContent = htmlToTxt(html)
+    html = rss_item.find_one({"_id": ObjectId(id)})["browserContentCollector"]["htmlContent"]
+    cleanContent = h2t.handle(html).replace('*','').replace('\n',' ')
     rss_item.update_one({"_id": ObjectId(id)}, {"$set": { "contentCleaner": { "cleanContent": cleanContent}}})
 
 client = MongoClient(environ['MONGO_URI'])

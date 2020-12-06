@@ -33,49 +33,24 @@ def planJobs():
             ]
         docs = db[task['query']['collection']].find(p,{'_id':1})
         ids = list(map(get('_id'),docs))
-        shuffle(ids)
         if len(ids) > 0:
-            yield defaultdict(None,{**task, 'ids': ids[:task.get('batchsize')]})
+            shuffle(ids)
+            return defaultdict(None,{**task, 'ids': ids[:task.get('batchsize')]})
     
 
 def executeJob(job):
     return run(job['command'], stdout=PIPE,input='\n'.join(map(str,job['ids'])), encoding='utf8')
 
-def optimizeBatches(jobs):
-    pred = lambda job : job.get('batchsize') and job['batchsize'] < len(job['ids'])
-    merge = lambda i,j : {**i, 'ids': list( set(i['ids']) | set(j['ids']) ) }
-    balance = lambda merged : [{**merged,'ids':xs} for xs in chunked(merged['ids'],merged['batchsize'])]
-
-    optimised,optimiseable = list(filter(lambda x : not pred(x),jobs)),list(filter(pred,jobs))
-    
-    grouped = [ list(v) for k,v in groupby( optimiseable , get('_id') )]
-    merged = [ reduce(merge,job) for job in grouped ]
-    balanced = map(balance,merged)
-
-    return [*optimised,*flatten(balanced)]
-
 # plan a lot
 print('planning initial jobs')
-jobs = [next(planJobs())]
 while True:
+    job = planJobs()
     # do a little
-    try:
-        job = jobs.pop()
+    if job:
         print('working', job['description'],len(job['ids']))
         executeJob(job)
-    except IndexError:
-        print('no more jobs in queue')
-        pass
-
-    # check what's new
-    print('planning jobs',end=' ')
-    jobs = [next(planJobs())]
-
-    # print(len(jobs),end=' -> ')
-    # jobs = optimizeBatches(jobs)
-    # print(len(jobs))
-    if len(jobs) == 0 :
+    else:
         print('nothing to do')
-        sleep(10)
+        sleep(5)
     
 client.close()

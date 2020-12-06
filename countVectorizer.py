@@ -5,10 +5,19 @@ import fileinput
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
+
 from sklearn.feature_extraction.text import CountVectorizer
+
+import nltk
+try:
+    nltk.data.find('stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+from nltk.corpus import stopwords
+
 from datetime import datetime
 import hashlib
-
 
 from os import environ 
 
@@ -25,9 +34,13 @@ rss_item = client.rss.rss_item
 count_vectorizer = client.rss.count_vectorizer
 
 ids = [ line.rstrip('\n') for line in fileinput.input() ]
-docs = list( rss_item.find({ "_id": { "$in" : [ObjectId(i) for i in ids]}}))
+docs = list( rss_item.find({ "_id": { "$in" : [ObjectId(i) for i in ids]}}) )
+docsFR = list(filter(lambda doc : doc['detectLanguage']['detected'] == 'fr',docs))
+docsEN = list(filter(lambda doc : doc['detectLanguage']['detected'] == 'en',docs))
 
-X = CountVectorizer().fit_transform( ( attack(doc) for doc in docs) )
-count_vectorizer.insert_one({'X':X,'hash':make_hash(*ids),'date':datetime.utcnow()})
+Xfr = CountVectorizer(" ".join(docsFR),stop_words=stopwords.words('french'))
+Xen = CountVectorizer(" ".join(docsEN),stop_words=stopwords.words('english'))
+
+count_vectorizer.insert_one({'Xfr':Xfr,'Xen':Xen,'hash':make_hash(*ids),'date':datetime.utcnow()})
 
 client.close()

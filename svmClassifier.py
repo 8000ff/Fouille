@@ -7,10 +7,11 @@ from os import environ
 def getDataFromDB():
     client = MongoClient(environ['MONGO_URI'])
     rss_item = client.rss.rss_item
-    items = rss_item.find({ "stemmer": { "$exists": "true" }, "label": { "$exists": "true" }}, { "stemmer": 1, "label": 1, "_id": 0})
+    #items = rss_item.find({ "stemmer": { "$exists": "true" }, "label": { "$exists": "true" }}, { "stemmer": 1, "label": 1, "_id": 0})
+    items = rss_item.find({ "contentCleaner": { "$exists": "true" }, "label": { "$exists": "true" }}, { "contentCleaner": 1, "label": 1, "_id": 0})
     data = []
     for item in items:
-        data.append([item["stemmer"]["stemmed"], item["label"]])
+        data.append([item["contentCleaner"]["cleanContent"], item["label"]])
     return data
 
 """ TEST
@@ -95,4 +96,25 @@ SVM = svm.SVC(C = 1.0, kernel = 'linear', degree = 3, gamma = 'auto')
 SVM.fit(Train_X_Tfidf, Train_Y)
 
 predictions_SVM = SVM.predict(Test_X_Tfidf)
-print("SVM Accuracy Score -> ",accuracy_score(predictions_SVM, Test_Y) * 100)
+print("SVM Accuracy Score -> ", accuracy_score(predictions_SVM, Test_Y) * 100)
+
+### Benchmark ###
+
+import xml.etree.ElementTree as ET
+
+tree = ET.parse('benchmark_gen.xml')
+root = tree.getroot()
+
+Test_X_bench = [item.text for item in root.iter('label')]
+Test_Y_bench = [item.text for item in root.iter('label')]
+
+Encoder = LabelEncoder()
+Test_Y_bench = Encoder.fit_transform(Test_Y_bench)
+
+Tfidf_vect_bench = TfidfVectorizer(max_features = 5000)
+Tfidf_vect_bench.fit(Test_X_bench)
+
+Test_X_bench_Tfidf = Tfidf_vect.transform(Test_X_bench)
+
+predictions_SVM_bench = SVM.predict(Test_X_bench_Tfidf)
+print("SVM Accuracy Score (bench) -> ", accuracy_score(predictions_SVM_bench, Test_Y_bench) * 100)

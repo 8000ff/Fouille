@@ -4,14 +4,24 @@ from pymongo import MongoClient
 
 from os import environ 
 
-def getDataFromDB():
+def getDataFromDB(language):
     client = MongoClient(environ['MONGO_URI'])
     rss_item = client.rss.rss_item
-    #items = rss_item.find({ "stemmer": { "$exists": "true" }, "label": { "$exists": "true" }}, { "stemmer": 1, "label": 1, "_id": 0})
-    items = rss_item.find({ "contentCleaner": { "$exists": "true" }, "label": { "$exists": "true" }}, { "contentCleaner": 1, "label": 1, "_id": 0})
+    _filter = { 
+        "detectLanguage": { "detected": language},
+        "lemmatizer": { "$exists": "true" }, 
+        "subject": { "$exists": "true" }
+    }
+    _projection = {
+        "_id": 0,
+        "subject": 1,
+        "lemmatizer.100": 1,
+        "source": 1
+    }
+    items = rss_item.find(_filter, _projection)
     data = []
     for item in items:
-        data.append([item["contentCleaner"]["cleanContent"], item["label"]])
+        data.append([item["lemmatizer"]["100"], item["subject"]])
     return data
 
 """ TEST
@@ -57,14 +67,14 @@ from os import path
 
 import pandas as pd 
 
-def getOrCreateCorpus():
-    if not path.exists("preProcessingData.csv"):
-        all_data = getDataFromDB()
-        for data in all_data:
-            data[0] = dataPreProcessing(data[0])
-        data_frame = pd.DataFrame(all_data, columns = ["text", "label"]) 
-        data_frame.to_csv("preProcessingData.csv", index = False)
-    return pd.read_csv("preProcessingData.csv")
+def getOrCreateCorpus(language):
+    if not path.exists("data/dataset/" + language + "/preProcessingData.csv"):
+        all_data = getDataFromDB(language)
+        # for data in all_data:
+        #     data[0] = dataPreProcessing(data[0])
+        data_frame = pd.DataFrame(all_data, columns = ["data", "label"]) 
+        data_frame.to_csv("data/dataset/" + language + "/preProcessingData.csv", index = False)
+    return pd.read_csv("data/dataset/" + language + "/preProcessingData.csv")
 
 """ TEST
 corpus = getOrCreateCorpus()
@@ -78,43 +88,72 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
 
-corpus = getOrCreateCorpus()
+import pickle
 
-Train_X, Test_X, Train_Y, Test_Y = model_selection.train_test_split(corpus['text'], corpus['label'], test_size = 0.3)
-
-Encoder = LabelEncoder()
-Train_Y = Encoder.fit_transform(Train_Y)
-Test_Y = Encoder.fit_transform(Test_Y)
-
-Tfidf_vect = TfidfVectorizer(max_features = 5000)
-Tfidf_vect.fit(corpus['text'])
-
-Train_X_Tfidf = Tfidf_vect.transform(Train_X)
-Test_X_Tfidf = Tfidf_vect.transform(Test_X)
-
-SVM = svm.SVC(C = 1.0, kernel = 'linear', degree = 3, gamma = 'auto')
-SVM.fit(Train_X_Tfidf, Train_Y)
-
-predictions_SVM = SVM.predict(Test_X_Tfidf)
-print("SVM Accuracy Score -> ", accuracy_score(predictions_SVM, Test_Y) * 100)
+def createModel(language):
+    corpus = getOrCreateCorpus(language)
+    Train_X, Test_X, Train_Y, Test_Y = model_selection.train_test_split(corpus['data'], corpus['label'], test_size = 0.3)
+    Encoder = LabelEncoder()
+    Train_Y = Encoder.fit_transform(Train_Y)
+    Test_Y = Encoder.fit_transform(Test_Y)
+    Tfidf_vect = TfidfVectorizer(max_features = 5000)
+    Tfidf_vect.fit(corpus['data'])
+    Train_X_Tfidf = Tfidf_vect.transform(Train_X)
+    Test_X_Tfidf = Tfidf_vect.transform(Test_X)
+    SVM = svm.SVC(C = 1.0, kernel = 'linear', degree = 3, gamma = 'auto', probability = True)
+    SVM.fit(Train_X_Tfidf, Train_Y)
+    predictions_SVM = SVM.predict(Test_X_Tfidf)
+    accuracy = accuracy_score(predictions_SVM, Test_Y) * 100 
+    print("SVM Accuracy Score -> ", accuracy)
+    pickle.dump(SVM, open("data/classifier/" + language + "/svm_biased_" + str(int(accuracy * 100)) + ".sav", 'wb'))
+    pickle.dump(Tfidf_vect, open("data/classifier/" + language + "/tfidf_vect_" + str(int(accuracy * 100))  + ".pkl","wb"))
+    pickle.dump(Encoder, open("data/classifier/" + language + "/encoder_" + str(int(accuracy * 100))  + ".pkl","wb"))
 
 ### Benchmark ###
 
-import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
-tree = ET.parse('benchmark_gen.xml')
-root = tree.getroot()
+import json
 
-Test_X_bench = [item.text for item in root.iter('label')]
-Test_Y_bench = [item.text for item in root.iter('label')]
+def getDataFromBenchmark(language):
+    en_db = minidom.parse("data/benchmark/" + language + "/benchmark.xml")
+    items = en_db.getElementsByTagName('item')
+    data = []
+    for i in range(len(items)):
+        data.append([items[i].getElementsByTagName('text')[0].childNodes[0].data])
+    return data
 
-Encoder = LabelEncoder()
-Test_Y_bench = Encoder.fit_transform(Test_Y_bench)
+def getOrCreatePreProcessingBenchmark(language):
+    if not path.exists("data/benchmark/" + language + "/preProcessingBenchmark.csv"):
+        all_data = getDataFromBenchmark(language)
+        for data in all_data:
+            data[0] = dataPreProcessing(data[0])
+        data_frame = pd.DataFrame(all_data, columns = ["data"]) 
+        data_frame.to_csv("data/benchmark/" + language + "/preProcessingBenchmark.csv", index = False)
+    return pd.read_csv("data/benchmark/" + language + "/preProcessingBenchmark.csv")
 
-Tfidf_vect_bench = TfidfVectorizer(max_features = 5000)
-Tfidf_vect_bench.fit(Test_X_bench)
+def makeBenchmark(language):
+    SVM = pickle.load(open("data/classifier/" + language + "/svm_biased_9551.sav", 'rb'))
+    Tfidf_vect = pickle.load(open("data/classifier/" + language + "/tfidf_vect_9551.pkl", 'rb'))
+    Encoder = pickle.load(open("data/classifier/" + language + "/encoder_9551.pkl", 'rb'))
+    Bench = getOrCreatePreProcessingBenchmark(language)
+    Test_X_Tfidf = Tfidf_vect.transform(Bench["data"])
+    predictions = Encoder.inverse_transform(SVM.predict(Test_X_Tfidf))
+    probas = SVM.predict_proba(Test_X_Tfidf)
+    res = dict()
+    res['pred'] = predictions.tolist()
+    res['probs'] = probas.tolist()
+    res['names'] = ['BROCHOT','MALLEJAC']
+    res['method'] = "SVM"
+    res['lang'] = language
+    file = open("data/benchmark/res/BROCHOT_MALLEJAC_SVM_" + language + ".res","w")
+    file.write(json.dumps(res))
+    file.close()
 
-Test_X_bench_Tfidf = Tfidf_vect.transform(Test_X_bench)
+### Main ###
 
-predictions_SVM_bench = SVM.predict(Test_X_bench_Tfidf)
-print("SVM Accuracy Score (bench) -> ", accuracy_score(predictions_SVM_bench, Test_Y_bench) * 100)
+language = "fr"
+
+#createModel(language)
+
+makeBenchmark(language)

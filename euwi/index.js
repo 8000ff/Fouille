@@ -3,6 +3,13 @@ const app = express();
 
 const pug = require("pug");
 
+const { Client } = require('@elastic/elasticsearch')
+const client = new Client({
+
+  node: "http://51.83.70.93:9200"
+  
+})
+
 function searchNews(query) {
 
     let ret = [
@@ -60,11 +67,48 @@ app
 
         let query = req.params.query;
 
-        let results = searchNews(query);
+        client.search({
 
-        res.status(200);
-        res.render("result", { query: query, results: results });
-        res.end();
+            index: "rss",
+            body: {
+                
+                query: {
+                    
+                    "query_string": {
+
+                        "query": query
+
+                    }
+                
+                }
+            
+            }
+        
+        }, (err, result) => {
+
+            if(err) { 
+
+                console.log(err)
+
+                res.status(500);
+                res.send("Error server");
+                res.end();
+
+            } else {
+
+                console.log(result.body.hits.hits)
+
+                result = result.body.hits.hits.map(e => e._source)
+
+                res.status(200);
+                res.render("result", { query: query, results: result });
+                res.end();
+
+            }
+        
+        })  
+
+        
 
     })
 

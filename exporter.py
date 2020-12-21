@@ -61,7 +61,7 @@ rss_item = client.rss.rss_item
 
 ids = [line.rstrip('\n') for line in fileinput.input()]
 
-fields = ["title", "contentCleaner.cleanContent"]
+fields = ["title", "description", "link"]
 
 for id in ids:
     export(id, fields)

@@ -1,18 +1,16 @@
 #TODO: Create database connection or instanciation rule
 
-
 p=python3
-
 
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
+CC=contentCleaner/contentCleaner.py
 E=exporter/exporter.py
-daemon=daemon/index.js
 
 n=10
 
-
 #export MONGO_URI=mongodb://localhost:27017
+#export ELASTIC_URI=http://localhost:9200/
 
 sampleRssItem:
 	mongoexport $(MONGO_URI) --db rss --collection rss_item --out sampleRssItem
@@ -25,7 +23,6 @@ sampleRssItemId: sampleRssItem
 
 sampleRssFeedId: sampleRssFeed
 	head -n $(n) sampleRssFeed | jq '._id' | jq '.[]' | tr -d '"' > sampleRssFeedId
-
 
 sampleHash: sampleRssItem
 	head -n $(n) sampleRssItem | jq '.hash' | tr -d '"' > sampleHash
@@ -42,20 +39,21 @@ test_rss: sampleRssFeedId $(RssIC)
 test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
 
+test_content_cleaner: sampleRssItemId $(CC)
+	head -n $(n) sampleRssItemId | $(p) $(CC)
 test_exporter: sampleRssItemId $(E)
 	head -n $(n) sampleRssItemId | $(p) $(E)
 
-.FORCE:
-test_daemon: .FORCE
-	node $(daemon)
+daemon:
+	python3 daemon.py
 
-save:
-	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
-	mongoexport $(MONGO_URI) --db rss --collection config --out config
+# save:
+# 	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
+# 	mongoexport $(MONGO_URI) --db rss --collection config --out config
 
 load:
-	mongoexport $(MONGO_URI) --db rss --collection rss_task --out rss_task
-	mongoimport $(MONGO_URI) --db rss --collection config --file config
+	# mongoimport $(MONGO_URI) --db rss --collection config --file config.json
+	mongoimport $(MONGO_URI) --db rss --collection rss_task --file rss_task.json
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

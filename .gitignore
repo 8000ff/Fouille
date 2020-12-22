@@ -1,10 +1,11 @@
 *node_modules
 *package-lock.json
-*.png
 sampleRssItem
 sampleHash
 sampleUrl
 sampleRssItemId
 sampleRssFeed
 sampleRssFeedId
+config
+rss_task
 data

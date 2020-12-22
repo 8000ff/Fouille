@@ -31,7 +31,8 @@ def planJobs():
                     {'lastCheck':None},
                     {'lastCheck':{'$lt': datetime.utcnow() - timedelta(**interval)}}
             ]
-        docs = db[task['query']['collection']].find(p,{'_id':1})
+        defbatchsize = db[task['query']['collection']].estimated_document_count()
+        docs = db[task['query']['collection']].find(p,{'_id':1}).limit(task.get('batchsize',defbatchsize))
         ids = list(map(get('_id'),docs))
         if len(ids) > 0:
             shuffle(ids)

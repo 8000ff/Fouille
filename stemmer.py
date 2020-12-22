@@ -10,11 +10,11 @@ from nltk.stem.snowball import SnowballStemmer
 from os import environ 
 
 def attack(doc):
-    language = {'en':'english','fr':'french'}[doc['detectLanguage']['detected']]
-    content = doc['contentCleaner']['cleanContent']
-
-    stemmed = SnowballStemmer(language).stem(content)
-    rss_item.update_one({'_id': doc['_id']}, {"$set": {'stemmer':{'stemmed':stemmed}}}, upsert=True)
+    language = {'en':'english','fr':'french'}.get(doc['detectLanguage']['detected'])
+    if language:
+        content = doc['contentCleaner']['cleanContent']
+        stemmed = SnowballStemmer(language).stem(content)
+        rss_item.update_one({'_id': doc['_id']}, {"$set": {'stemmer':{'stemmed':stemmed}}}, upsert=True)
 
 client = MongoClient(environ['MONGO_URI'] , 27017)
 

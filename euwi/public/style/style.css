@@ -145,7 +145,7 @@ h1, p, input, a {
 
 .results {
 
-	padding-left: calc(63.5px + 10%);
+	padding: 0 calc(63.5px + 10%);
 
 }
 

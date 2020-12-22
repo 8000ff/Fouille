@@ -80,7 +80,18 @@ app
 
                     }
                 
-                }
+                },
+                "filter": {
+
+                    "bool": {
+
+                        "must_not": { "missing": { "field": "cleanDate" } }
+
+                    }
+
+                },
+                
+                "sort": { "cleanDate" : "desc" }
             
             }
         

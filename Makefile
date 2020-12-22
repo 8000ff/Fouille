@@ -4,6 +4,8 @@ p=python3
 
 RssIC=rssItemCollector.py
 BCC=browserContentCollector/browserContentCollector.js
+svm=svmClassifier.py
+
 CC=contentCleaner/contentCleaner.py
 E=exporter/exporter.py
 
@@ -39,6 +41,8 @@ test_rss: sampleRssFeedId $(RssIC)
 test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
 
+test_svm:
+	$(p) $(svm)
 test_content_cleaner: sampleRssItemId $(CC)
 	head -n $(n) sampleRssItemId | $(p) $(CC)
 test_exporter: sampleRssItemId $(E)

@@ -41,6 +41,8 @@ test_rss: sampleRssFeedId $(RssIC)
 test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
 
+test_euwi:
+	node euwi/index.js
 test_svm:
 	$(p) $(svm)
 test_content_cleaner: sampleRssItemId $(CC)

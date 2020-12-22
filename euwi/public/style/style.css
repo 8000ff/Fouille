@@ -1,0 +1,198 @@
+/******************************************************************************
+ * Global Value
+ *****************************************************************************/
+
+ :root {
+
+	--backgroundColor: #191919;
+	--backgroundSearchCardColor: #222222;
+
+	--fillMosaique: #353535;
+
+	--backgroundImage: url(../images/mosaique.svg);
+	--backgroundSize: 150px;
+
+	--font-family: 'Montserrat', sans-serif;
+
+}
+
+/******************************************************************************
+ * General
+ *****************************************************************************/
+
+html, body {
+
+  	margin: 0;
+	background-color: var(--backgroundColor);
+
+}
+
+section#index {
+
+	width: 100vw;
+	height: 100vh;
+	background-image: var(--backgroundImage);
+	background-size: var(--backgroundSize);
+	display: grid;
+	place-items: center;
+	animation: movingBackground 5s linear infinite;
+
+}
+
+h1, p, input, a {
+
+	font-family: var(--font-family);
+	color: white;
+
+}
+
+/******************************************************************************
+ * SearchCard
+ *****************************************************************************/
+
+.searchCard {
+
+	width: clamp(50vw, 50vh, 90vw);
+	height: auto;
+	display: grid;
+	place-items: center;
+	background: var(--backgroundSearchCardColor);
+	border-radius: 8px;
+	box-shadow: 0px 5px 20px 10px rgba(0,0,0,0.2);
+	padding: 15px;
+
+}
+
+.searchCardTitle {
+
+	width: 50%;
+	margin: 25px;
+
+}
+
+.searchCardInput {
+
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	margin-bottom: 25px;
+	border-radius: 320px;
+	padding: 15px;
+	background-color: var(--backgroundSearchCardColor);
+	box-shadow: inset 2px 2px 5px var(--backgroundColor), inset -5px -5px 10px var(--fillMosaique);
+	box-sizing: border-box;
+	transition: all 0.2s ease-in-out;
+
+}
+
+.searchCardInput:focus-within {
+
+	box-shadow: inset 1px 1px 2px var(--backgroundColor), inset -1px -1px 2px var(--fillMosaique);
+
+}
+
+.searchCardInput input {
+
+	width: calc(100% - 40px);
+	background: none;
+	color: white;
+	border: 0;
+	outline: 0;
+	font-size: 15px;
+
+}
+
+.searchCardInput img {
+
+	width: 25;
+	height: 25px;
+	cursor: pointer;
+
+}
+
+/******************************************************************************
+ * TopSearchCard
+ *****************************************************************************/
+
+ .topSearchCard {
+
+	display: flex;
+	background: var(--backgroundSearchCardColor);
+	box-shadow: 0px 5px 20px 10px rgba(0,0,0,0.2);
+	padding: 15px;
+
+}
+
+.topSearchCard .searchCardTitle {
+
+	width: 10%;
+	height: 30px;
+	margin: 12.5px 30px 12.5px 12.5px;
+
+}
+
+.topSearchCard .searchCardInput {
+
+	width: 50%;
+	margin-bottom: 0;
+
+}
+
+/******************************************************************************
+ * result
+ *****************************************************************************/
+
+.results {
+
+	padding: 0 calc(63.5px + 10%);
+
+}
+
+.title {
+
+	margin-bottom: 10px;
+
+}
+
+.description {
+
+	margin-bottom: 30px;
+
+}
+
+a {
+
+	outline: none;
+  	text-decoration: none;
+
+}
+
+a:visited {
+
+	color: silver;
+
+}
+
+a:hover {
+
+	text-decoration: underline white;
+
+}
+
+a:visited:hover {
+
+	text-decoration: underline silver;
+
+}
+
+/******************************************************************************
+ * Animation
+ *****************************************************************************/
+
+@keyframes movingBackground {
+
+	from { background-position: 0 0; }
+	to { background-position: var(--backgroundSize) var(--backgroundSize); }
+
+}

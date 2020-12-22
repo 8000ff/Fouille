@@ -1,54 +1,103 @@
-const pug = require('pug');
-const express = require('express');
-const app = express()
+const express = require("express");
+const app = express();
 
-const elstic_uri = 'http://localhost:9200'
+const pug = require("pug");
+
+const { stdin, env } = require('process');
+
 const { Client } = require('@elastic/elasticsearch')
-const elastic = new Client({ node: elstic_uri })
+const client = new Client({
 
-
-const { MongoClient } = require("mongodb");
-
-const mongo_uri = "mongodb://localhost/rss"
-const collectionName = "elastic_client";
-
-async function register() {
-    const mongo = new MongoClient(mongo_uri)
-    try {
-        await mongo.connect()
-        collection = await mongo.db().collection(collectionName)
-        registered = await collection.find({ elstic_uri }).count() > 0
-        if (!registered) {
-            await collection.insertOne({ elstic_uri })
-        }
-        mongo.close();
-    } catch (e) {
-        console.warn('Elastic instance did not manage to contact backend, backend is probably offline')
-    }
-}
-register()
-
-app.set('view engine', 'pug')
-
-app.get('/', function(req, res) {
-    console.log('req')
-    const params = Object.keys(req.query)
-    if (params.length == 0) {
-        res.render('search')
-    } else {
-        elastic.search({
-            index: 'my-index',
-            body: {
-                query: {
-                    match: { hello: 'world' }
-                }
-            }
-        }, (err, result) => {
-            if (err) console.log(err)
-            else res.render('result', result)
-        })
-    }
+  node: env.ELASTIC_URI
+  
 })
 
-app.use(express.static(__dirname + "/public"));
-app.listen(3000, (x) => console.log('listening', x))
+app
+    .set("views", "euwi/views")
+
+    .set("view engine", "pug")
+
+    .use(express.static("euwi/public"))
+
+    .get("/", (_, res) => {
+
+        res.status(200);
+        res.render("index");
+        res.end();
+
+    })
+
+    .get("/search/:query", (req, res) => {
+
+        let query = req.params.query;
+
+        client.search({
+
+            index: "rss",
+            body: {
+                
+                query: {
+                    
+                    "query_string": {
+
+                        "query": query
+
+                    }
+                
+                },
+                "filter": {
+
+                    "bool": {
+
+                        "must_not": { "missing": { "field": "cleanDate" } }
+
+                    }
+
+                },
+                
+                "sort": { "cleanDate" : "desc" }
+            
+            }
+        
+        }, (err, result) => {
+
+            if(err) { 
+
+                console.log(err)
+
+                res.status(500);
+                res.send("Error server");
+                res.end();
+
+            } else {
+
+                console.log(result.body.hits.hits)
+
+                result = result.body.hits.hits.map(e => e._source)
+
+                res.status(200);
+                res.render("result", { query: query, results: result });
+                res.end();
+
+            }
+        
+        })  
+
+        
+
+    })
+
+    .use(function(_, res){
+
+        res.setHeader("Content-Type", "text/plain");
+        res.status(404);
+        res.send("Page introuvable");
+        res.end();
+
+    })
+
+    .listen(8080, () => {
+
+        console.log(`Server started at port 8080`);
+
+    });

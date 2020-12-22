@@ -1,15 +1,16 @@
 {
-    "description": "Retrieve rss items from feeds",
+    "description": "Periodically retrieves rss items from feeds",
     "enable": true,
     "query": {
         "collection": "rss_feed",
         "filter": {}
     },
-    "interval": { "seconds": 60 },
+    "interval": { "seconds": 3600 },
     "command": [
         "python3",
         "rssItemCollector.py"
-    ]
+    ],
+    "batchsize": 1
 }
 
 {
@@ -23,7 +24,7 @@
         "node",
         "browserContentCollector/browserContentCollector.js"
     ],
-    "batchsize": 15
+    "batchsize": 100
 }
 
 {
@@ -36,7 +37,8 @@
     "command": [
         "python3",
         "contentCleaner.py"
-    ]
+    ],
+    "batchsize": 100
 }
 
 {
@@ -49,7 +51,8 @@
     "command": [
         "python3",
         "wordCount.py"
-    ]
+    ],
+    "batchsize": 100
 }
 
 {
@@ -57,10 +60,39 @@
     "enable": true,
     "query": {
         "collection": "rss_item",
-        "filter": { "wordcount": { "$exists": true }, "detectLanguage": { "$exists": false } }
+        "filter": { "wordCount": { "$exists": true }, "detectLanguage": { "$exists": false } }
     },
     "command": [
         "python3",
         "detectLanguage.py"
+    ],
+    "batchsize": 100
+}
+
+{
+    "description": "Stemmer",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "detectLanguage": { "$exists": true }, "contentCleaner": { "$exists": true }, "stemmer": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "stemmer.py"
+    ],
+    "batchsize": 15
+}
+
+{
+    "description": "Convert the stemmed NL content of documents to a matrix of token counts",
+    "enable": false,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "contentCleaner": { "$exists": true }, "wordCount": { "$exists": true } }
+    },
+    "interval": { "seconds": 60 },
+    "command": [
+        "python3",
+        "countVectorizer.py"
     ]
 }

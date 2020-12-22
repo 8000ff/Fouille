@@ -9,8 +9,8 @@ BCC=browserContentCollector/browserContentCollector.js
 
 n=10
 
-
 #export MONGO_URI=mongodb://localhost:27017
+#export ELASTIC_URI=http://localhost:9200
 
 sampleRssItem:
 	mongoexport $(MONGO_URI) --db rss --collection rss_item --out sampleRssItem
@@ -38,6 +38,9 @@ test_rss: sampleRssFeedId $(RssIC)
 	head -n $(n) sampleRssFeedId | $(p) $(RssIC) 
 test_content: sampleRssItemId $(BCC)
 	head -n $(n) sampleRssItemId | node $(BCC)
+
+test_euwi:
+	node euwi/index.js
 
 clean:
 	rm -rf sampleRssItem sampleHash sampleUrl sampleRssItemId sampleRssFeed sampleRssFeedId

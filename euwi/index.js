@@ -3,57 +3,21 @@ const app = express();
 
 const pug = require("pug");
 
+const { stdin, env } = require('process');
+
 const { Client } = require('@elastic/elasticsearch')
 const client = new Client({
 
-  node: "http://51.83.70.93:9200"
+  node: env.ELASTIC_URI
   
 })
 
-function searchNews(query) {
-
-    let ret = [
-        {
-
-            title: "test1",
-            description: "test1test1test1test1test1",
-            link: "/test1"
-
-        },
-        {
-
-            title: "test2",
-            description: "test2test2test2test2test2",
-            link: "/test2"
-
-        },
-        {
-
-            title: "test3",
-            description: "test3test3test3test3test3",
-            link: "/test3"
-
-        },
-        {
-
-            title: "test4",
-            description: "test4test4test4test4test4",
-            link: "/test4"
-
-        }
-
-    ];
-
-    return ret;
-
-}
-
 app
-    .set("views", "./views")
+    .set("views", "euwi/views")
 
     .set("view engine", "pug")
 
-    .use(express.static("public"))
+    .use(express.static("euwi/public"))
 
     .get("/", (_, res) => {
 

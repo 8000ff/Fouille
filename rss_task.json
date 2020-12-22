@@ -1,0 +1,98 @@
+{
+    "description": "Periodically retrieves rss items from feeds",
+    "enable": true,
+    "query": {
+        "collection": "rss_feed",
+        "filter": {}
+    },
+    "interval": { "seconds": 3600 },
+    "command": [
+        "python3",
+        "rssItemCollector.py"
+    ],
+    "batchsize": 1
+}
+
+{
+    "description": "Retrieve html content from rss item links",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "link": { "$exists": true }, "browserContentCollector": { "$exists": false } }
+    },
+    "command": [
+        "node",
+        "browserContentCollector/browserContentCollector.js"
+    ],
+    "batchsize": 100
+}
+
+{
+    "description": "Get clean text",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "browserContentCollector": { "$exists": true }, "contentCleaner": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "contentCleaner.py"
+    ],
+    "batchsize": 100
+}
+
+{
+    "description": "Word count",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "contentCleaner": { "$exists": true }, "wordCount": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "wordCount.py"
+    ],
+    "batchsize": 100
+}
+
+{
+    "description": "Predict language",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "wordCount": { "$exists": true }, "detectLanguage": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "detectLanguage.py"
+    ],
+    "batchsize": 100
+}
+
+{
+    "description": "Stemmer",
+    "enable": true,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "detectLanguage": { "$exists": true }, "contentCleaner": { "$exists": true }, "stemmer": { "$exists": false } }
+    },
+    "command": [
+        "python3",
+        "stemmer.py"
+    ],
+    "batchsize": 15
+}
+
+{
+    "description": "Convert the stemmed NL content of documents to a matrix of token counts",
+    "enable": false,
+    "query": {
+        "collection": "rss_item",
+        "filter": { "contentCleaner": { "$exists": true }, "wordCount": { "$exists": true } }
+    },
+    "interval": { "seconds": 60 },
+    "command": [
+        "python3",
+        "countVectorizer.py"
+    ]
+}
